@@ -57,9 +57,6 @@ class MemoryRedisIsolated {
                 {
                     name: 'redisMemoryIsolated',
                     required: false,
-                    displayOptions: {
-                        show: {},
-                    },
                 },
             ],
             codex: {
@@ -93,10 +90,11 @@ class MemoryRedisIsolated {
                     },
                 },
                 {
-                    displayName: 'Credentials are optional. If not provided, the node will use queue Redis environment variables (QUEUE_BULL_REDIS_*) with database number + 1.',
-                    name: 'credentialsNotice',
-                    type: 'notice',
-                    default: '',
+                    displayName: 'Use Queue Mode Redis',
+                    name: 'useQueueRedis',
+                    type: 'boolean',
+                    default: true,
+                    description: 'Whether to use the queue mode Redis configuration (QUEUE_BULL_REDIS_* environment variables). When enabled, this overrides any credentials provided above. Chat memory will be stored in database (QUEUE_BULL_REDIS_DB + 1) to avoid conflicts with queue data.',
                 },
                 {
                     displayName: 'Session ID',
@@ -133,13 +131,7 @@ class MemoryRedisIsolated {
         };
     }
     async supplyData(itemIndex) {
-        let credentials;
-        try {
-            credentials = await this.getCredentials('redisMemoryIsolated');
-        }
-        catch (error) {
-            credentials = null;
-        }
+        const useQueueRedis = this.getNodeParameter('useQueueRedis', itemIndex, true);
         const sessionId = this.getNodeParameter('sessionId', itemIndex);
         const sessionTTL = this.getNodeParameter('sessionTTL', itemIndex, 0);
         const contextWindowLength = this.getNodeParameter('contextWindowLength', itemIndex, 10);
@@ -150,7 +142,11 @@ class MemoryRedisIsolated {
         const userHash = crypto.createHash('sha256').update(`${workflowId}`).digest('hex').substring(0, 10);
         const isolatedSessionKey = `${userHash}:${sessionId}`;
         let redisOptions;
-        if (credentials) {
+        if (!useQueueRedis) {
+            const credentials = await this.getCredentials('redisMemoryIsolated');
+            if (!credentials) {
+                throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'Credentials are required when "Use Queue Redis" is disabled');
+            }
             redisOptions = {
                 socket: {
                     host: credentials.host,

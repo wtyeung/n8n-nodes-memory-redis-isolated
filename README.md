@@ -73,9 +73,20 @@ The node stores and retrieves chat history for AI agents with the following para
 
 This node uses a dedicated **Redis Memory (Isolated)** credential type that is NOT shared with the standard Redis operation node.
 
-**Credentials are optional!** If credentials are not provided, the node will automatically use the queue Redis environment variables (`QUEUE_BULL_REDIS_*`) with database number + 1. This makes it easy to use in queue mode without additional configuration.
+### Use Queue Redis (Default)
 
-### Setting up credentials (Optional):
+By default, the node has **"Use Queue Redis"** enabled, which automatically uses your n8n queue Redis configuration without requiring any credentials. This is the recommended setup for queue mode deployments.
+
+When enabled, the node uses these environment variables:
+- `QUEUE_BULL_REDIS_HOST`
+- `QUEUE_BULL_REDIS_PORT`
+- `QUEUE_BULL_REDIS_DB` (the node uses this + 1 to avoid conflicts)
+- `QUEUE_BULL_REDIS_USERNAME`
+- `QUEUE_BULL_REDIS_PASSWORD`
+
+### Custom Redis Credentials
+
+To use a different Redis instance, disable **"Use Queue Redis"** and configure custom credentials:
 
 1. In n8n, go to **Credentials** → **New**
 2. Search for "Redis Memory (Isolated)"
@@ -88,19 +99,7 @@ This node uses a dedicated **Redis Memory (Isolated)** credential type that is N
    - **SSL**: Enable SSL/TLS connection
    - **Disable TLS Verification**: Only for self-signed certificates (insecure)
 
-### Using Queue Redis (No Credentials Required):
-
-If you're running n8n in queue mode, you can skip credential setup entirely. The node will automatically use these environment variables:
-
-- `QUEUE_BULL_REDIS_HOST` (default: localhost)
-- `QUEUE_BULL_REDIS_PORT` (default: 6379)
-- `QUEUE_BULL_REDIS_DB` (the node uses this + 1 to avoid conflicts)
-- `QUEUE_BULL_REDIS_USERNAME` (optional)
-- `QUEUE_BULL_REDIS_PASSWORD` (optional)
-
-This ensures the chat memory uses the same Redis instance as your queue, but in a separate database.
-
-### Azure Cache for Redis:
+### Azure Cache for Redis
 
 When using **Azure Cache for Redis**, configure the credentials as follows:
 - **Host**: Your Azure Redis hostname (e.g., `yourname.redis.cache.windows.net`)

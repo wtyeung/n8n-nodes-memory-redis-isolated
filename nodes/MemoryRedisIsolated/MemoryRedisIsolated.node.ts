@@ -28,9 +28,6 @@ export class MemoryRedisIsolated implements INodeType {
 			{
 				name: 'redisMemoryIsolated',
 				required: false,
-				displayOptions: {
-					show: {},
-				},
 			},
 		],
 		codex: {
@@ -64,10 +61,11 @@ export class MemoryRedisIsolated implements INodeType {
 				},
 			},
 			{
-				displayName: 'Credentials are optional. If not provided, the node will use queue Redis environment variables (QUEUE_BULL_REDIS_*) with database number + 1.',
-				name: 'credentialsNotice',
-				type: 'notice',
-				default: '',
+				displayName: 'Use Queue Mode Redis',
+				name: 'useQueueRedis',
+				type: 'boolean',
+				default: true,
+				description: 'Whether to use the queue mode Redis configuration (QUEUE_BULL_REDIS_* environment variables). When enabled, this overrides any credentials provided above. Chat memory will be stored in database (QUEUE_BULL_REDIS_DB + 1) to avoid conflicts with queue data.',
 			},
 			{
 				displayName: 'Session ID',
@@ -105,14 +103,7 @@ export class MemoryRedisIsolated implements INodeType {
 	};
 
 	async supplyData(this: ISupplyDataFunctions, itemIndex: number): Promise<SupplyData> {
-		let credentials;
-		try {
-			credentials = await this.getCredentials('redisMemoryIsolated');
-		} catch (error) {
-			// Credentials not defined, will use environment variables
-			credentials = null;
-		}
-
+		const useQueueRedis = this.getNodeParameter('useQueueRedis', itemIndex, true) as boolean;
 		const sessionId = this.getNodeParameter('sessionId', itemIndex) as string;
 		const sessionTTL = this.getNodeParameter('sessionTTL', itemIndex, 0) as number;
 		const contextWindowLength = this.getNodeParameter('contextWindowLength', itemIndex, 10) as number;
@@ -134,7 +125,16 @@ export class MemoryRedisIsolated implements INodeType {
 
 		let redisOptions: RedisClientOptions;
 
-		if (credentials) {
+		if (!useQueueRedis) {
+			// Use provided credentials
+			const credentials = await this.getCredentials('redisMemoryIsolated');
+			
+			if (!credentials) {
+				throw new NodeOperationError(
+					this.getNode(),
+					'Credentials are required when "Use Queue Redis" is disabled',
+				);
+			}
 			// Use provided credentials
 			redisOptions = {
 				socket: {
