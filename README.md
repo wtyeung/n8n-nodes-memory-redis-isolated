@@ -15,11 +15,40 @@ This is an n8n community node that provides Redis-based chat memory for AI agent
 
 ## Installation
 
-Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+### Community Nodes (Recommended)
 
+1. In n8n, go to **Settings** > **Community Nodes**
+2. Select **Install**
+3. Enter `n8n-nodes-memory-redis-isolated`
+4. Accept the installation
+
+### Manual Installation (Local Development)
+
+For n8n v1.0+:
 ```bash
+cd ~/.n8n/custom-nodes
 npm install n8n-nodes-memory-redis-isolated
 ```
+
+For n8n v2.0+ (Docker/Self-hosted):
+1. Mount the volume to `/home/node/.n8n/custom-nodes`
+2. Install the package inside that directory
+
+## Development
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Start n8n with the node loaded:
+   ```bash
+   npm run dev
+   ```
+4. The node will appear as **Redis Chat Memory (Isolated)** in the AI Agent node's Memory selector.
+
+## Troubleshooting
+
+- **Node not showing up?** Ensure you are looking in the **Memory** input of the AI Agent node, not just the main node list.
+- **Connection failed?** Verify your Redis credentials and network connectivity.
+- **Port conflicts?** If `npm run dev` fails, check if another n8n instance is running on port 5678.
 
 ## Features
 

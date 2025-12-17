@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "description": "Redis-based chat memory node for n8n AI agents with user isolation for queue mode",
     "license": "MIT",
-    "homepage": "https://example.com",
+    "homepage": "https://github.com/wtyeung/n8n-nodes-memory-redis-isolated#readme",
     "keywords": [
         "n8n-community-node-package"
     ],
@@ -13,7 +13,7 @@
     },
     "repository": {
         "type": "git",
-        "url": ""
+        "url": "https://github.com/wtyeung/n8n-nodes-memory-redis-isolated.git"
     },
     "scripts": {
         "build": "n8n-node build",
@@ -34,7 +34,8 @@
         ],
         "nodes": [
             "dist/nodes/MemoryRedisIsolated/MemoryRedisIsolated.node.js"
-        ]
+        ],
+        "strict": false
     },
     "devDependencies": {
         "@n8n/node-cli": "*",

@@ -34,7 +34,8 @@
         ],
         "nodes": [
             "dist/nodes/MemoryRedisIsolated/MemoryRedisIsolated.node.js"
-        ]
+        ],
+        "strict": false
     },
     "devDependencies": {
         "@n8n/node-cli": "*",

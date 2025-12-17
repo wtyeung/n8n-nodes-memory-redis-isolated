@@ -34,9 +34,9 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MemoryRedisIsolated = void 0;
+const n8n_workflow_1 = require("n8n-workflow");
 const redis_1 = require("@langchain/redis");
 const memory_1 = require("langchain/memory");
-const n8n_workflow_1 = require("n8n-workflow");
 const redis_2 = require("redis");
 const crypto = __importStar(require("crypto"));
 class MemoryRedisIsolated {
@@ -47,6 +47,7 @@ class MemoryRedisIsolated {
             icon: 'file:redis.svg',
             group: ['transform'],
             version: 1,
+            subtitle: 'User Isolation for Queue Mode',
             description: 'Stores chat history in Redis with user isolation for queue mode',
             defaults: {
                 name: 'Redis Chat Memory (Isolated)',
@@ -61,11 +62,12 @@ class MemoryRedisIsolated {
                 categories: ['AI'],
                 subcategories: {
                     AI: ['Memory'],
+                    Memory: ['Other memories'],
                 },
                 resources: {
                     primaryDocumentation: [
                         {
-                            url: 'https://github.com/org/repo?tab=readme-ov-file',
+                            url: 'https://github.com/wtyeung/n8n-nodes-memory-redis-isolated#readme',
                         },
                     ],
                 },
@@ -118,13 +120,14 @@ class MemoryRedisIsolated {
         const sessionId = this.getNodeParameter('sessionId', itemIndex);
         const sessionTTL = this.getNodeParameter('sessionTTL', itemIndex, 0);
         const contextWindowLength = this.getNodeParameter('contextWindowLength', itemIndex, 10);
+        const workflowId = this.getWorkflow().id;
         if (!userId || userId.trim() === '') {
             throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'User ID is required for isolated memory storage');
         }
         if (!sessionId || sessionId.trim() === '') {
             throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'Session ID is required for memory storage');
         }
-        const userHash = crypto.createHash('sha256').update(userId).digest('hex').substring(0, 10);
+        const userHash = crypto.createHash('sha256').update(`${workflowId}:${userId}`).digest('hex').substring(0, 10);
         const isolatedSessionKey = `${userHash}:${sessionId}`;
         const redisOptions = {
             socket: {
