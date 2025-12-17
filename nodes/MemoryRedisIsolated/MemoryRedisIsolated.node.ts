@@ -83,9 +83,13 @@ export class MemoryRedisIsolated implements INodeType {
 				displayName: 'Session Time To Live (Seconds)',
 				name: 'sessionTTL',
 				type: 'number',
-				default: 0,
+				default: 86400,
+				typeOptions: {
+					maxValue: 86400,
+					minValue: 0,
+				},
 				description:
-					'How long the session should be stored in seconds. Set to 0 for no expiration.',
+					'How long the session should be stored in seconds. Maximum is 86400 (24 hours). Set to 0 for no expiration.',
 			},
 		],
 		usableAsTool: true,
