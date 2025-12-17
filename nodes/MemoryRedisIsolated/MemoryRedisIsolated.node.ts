@@ -7,7 +7,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { RedisChatMessageHistory, type RedisChatMessageHistoryInput } from '@langchain/redis';
-import { BufferWindowMemory } from 'langchain/memory';
+import { BufferWindowMemory } from '@langchain/classic/memory';
 import { createClient, type RedisClientOptions } from 'redis';
 import * as crypto from 'crypto';
 
@@ -35,6 +35,7 @@ export class MemoryRedisIsolated implements INodeType {
 				AI: ['Memory'],
 				Memory: ['Other memories'],
 			},
+			alias: ['redis', 'cache', 'memory', 'chat history'],
 			resources: {
 				primaryDocumentation: [
 					{
@@ -47,15 +48,6 @@ export class MemoryRedisIsolated implements INodeType {
 		outputs: [NodeConnectionTypes.AiMemory],
 		outputNames: ['Memory'],
 		properties: [
-			{
-				displayName: 'User ID',
-				name: 'userId',
-				type: 'string',
-				default: '={{ $json.userId }}',
-				required: true,
-				description: 'Unique identifier for the user. Will be hashed for isolation.',
-				placeholder: 'e.g., user123 or {{ $json.userId }}',
-			},
 			{
 				displayName: 'Session ID',
 				name: 'sessionId',
@@ -89,29 +81,21 @@ export class MemoryRedisIsolated implements INodeType {
 	async supplyData(this: ISupplyDataFunctions, itemIndex: number): Promise<SupplyData> {
 		const credentials = await this.getCredentials('redisMemoryIsolated');
 
-		const userId = this.getNodeParameter('userId', itemIndex) as string;
 		const sessionId = this.getNodeParameter('sessionId', itemIndex) as string;
 		const sessionTTL = this.getNodeParameter('sessionTTL', itemIndex, 0) as number;
 		const contextWindowLength = this.getNodeParameter('contextWindowLength', itemIndex, 10) as number;
 		const workflowId = this.getWorkflow().id;
 
-		if (!userId || userId.trim() === '') {
-			throw new NodeOperationError(
-this.getNode(),
-				'User ID is required for isolated memory storage',
-			);
-		}
-
 		if (!sessionId || sessionId.trim() === '') {
 			throw new NodeOperationError(
-this.getNode(),
+				this.getNode(),
 				'Session ID is required for memory storage',
 			);
 		}
 
-		// Hash the user ID and take first 10 characters for isolation
-		// Include workflow ID to prevent cross-workflow access
-		const userHash = crypto.createHash('sha256').update(`${workflowId}:${userId}`).digest('hex').substring(0, 10);
+		// Hash the workflow ID and take first 10 characters for isolation
+		// This ensures data is isolated per workflow
+		const userHash = crypto.createHash('sha256').update(`${workflowId}`).digest('hex').substring(0, 10);
 		
 		// Create isolated session key: userHash:sessionId
 		const isolatedSessionKey = `${userHash}:${sessionId}`;
@@ -133,17 +117,13 @@ this.getNode(),
 		}
 
 		const client = createClient({
-...redisOptions,
-});
+			...redisOptions,
+		});
 
-		try {
-			await client.connect();
-		} catch (error) {
-			throw new NodeOperationError(
-this.getNode(),
-				'Failed to connect to Redis: ' + (error as Error).message,
-			);
-		}
+		client.on('error', async (error: Error) => {
+			await client.quit();
+			throw new NodeOperationError(this.getNode(), 'Redis Error: ' + error.message);
+		});
 
 		const redisChatConfig: RedisChatMessageHistoryInput = {
 			client,
