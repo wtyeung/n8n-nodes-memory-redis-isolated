@@ -55,7 +55,7 @@ For n8n v2.0+ (Docker/Self-hosted):
 
 - **Workflow Isolation**: Chat histories are isolated per workflow using hashed workflow IDs
 - **Queue Mode Compatible**: Designed specifically for n8n queue mode where simple in-memory storage doesn't work reliably
-- **Dedicated Credentials**: Uses its own credential type, not shared with regular Redis operation nodes
+- **Dedicated Credentials**: Uses its own credential type, not shared with regular Redis operation nodes. This prevents users from using the same credential to list keys or access other workflows' memory data via Redis operation nodes.
 - **Session Management**: Supports session TTL and context window length
 - **Secure**: Workflow IDs are hashed (SHA-256) and only the first 10 characters are used as prefix
 
