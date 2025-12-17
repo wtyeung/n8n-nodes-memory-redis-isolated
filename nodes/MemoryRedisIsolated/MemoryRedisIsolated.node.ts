@@ -38,7 +38,7 @@ export class MemoryRedisIsolated implements INodeType {
 			resources: {
 				primaryDocumentation: [
 					{
-						url: 'https://github.com/org/repo?tab=readme-ov-file',
+						url: 'https://github.com/wtyeung/n8n-nodes-memory-redis-isolated#readme',
 					},
 				],
 			},
