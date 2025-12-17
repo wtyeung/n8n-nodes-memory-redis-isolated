@@ -56,7 +56,10 @@ class MemoryRedisIsolated {
             credentials: [
                 {
                     name: 'redisMemoryIsolated',
-                    required: true,
+                    required: false,
+                    displayOptions: {
+                        show: {},
+                    },
                 },
             ],
             codex: {
@@ -88,6 +91,12 @@ class MemoryRedisIsolated {
                             '@version': [{ _cnd: { lte: 1 } }],
                         },
                     },
+                },
+                {
+                    displayName: 'Credentials are optional. If not provided, the node will use queue Redis environment variables (QUEUE_BULL_REDIS_*) with database number + 1.',
+                    name: 'credentialsNotice',
+                    type: 'notice',
+                    default: '',
                 },
                 {
                     displayName: 'Session ID',
@@ -124,7 +133,13 @@ class MemoryRedisIsolated {
         };
     }
     async supplyData(itemIndex) {
-        const credentials = await this.getCredentials('redisMemoryIsolated');
+        let credentials;
+        try {
+            credentials = await this.getCredentials('redisMemoryIsolated');
+        }
+        catch (error) {
+            credentials = null;
+        }
         const sessionId = this.getNodeParameter('sessionId', itemIndex);
         const sessionTTL = this.getNodeParameter('sessionTTL', itemIndex, 0);
         const contextWindowLength = this.getNodeParameter('contextWindowLength', itemIndex, 10);
@@ -134,19 +149,42 @@ class MemoryRedisIsolated {
         }
         const userHash = crypto.createHash('sha256').update(`${workflowId}`).digest('hex').substring(0, 10);
         const isolatedSessionKey = `${userHash}:${sessionId}`;
-        const redisOptions = {
-            socket: {
-                host: credentials.host,
-                port: credentials.port,
-                tls: credentials.ssl === true,
-            },
-            database: credentials.database,
-        };
-        if (credentials.user) {
-            redisOptions.username = credentials.user;
+        let redisOptions;
+        if (credentials) {
+            redisOptions = {
+                socket: {
+                    host: credentials.host,
+                    port: credentials.port,
+                    tls: credentials.ssl === true,
+                },
+                database: credentials.database,
+            };
+            if (credentials.user) {
+                redisOptions.username = credentials.user;
+            }
+            if (credentials.password) {
+                redisOptions.password = credentials.password;
+            }
         }
-        if (credentials.password) {
-            redisOptions.password = credentials.password;
+        else {
+            const queueHost = process.env.QUEUE_BULL_REDIS_HOST || 'localhost';
+            const queuePort = parseInt(process.env.QUEUE_BULL_REDIS_PORT || '6379', 10);
+            const queueDb = parseInt(process.env.QUEUE_BULL_REDIS_DB || '0', 10);
+            const queueUsername = process.env.QUEUE_BULL_REDIS_USERNAME;
+            const queuePassword = process.env.QUEUE_BULL_REDIS_PASSWORD;
+            redisOptions = {
+                socket: {
+                    host: queueHost,
+                    port: queuePort,
+                },
+                database: queueDb + 1,
+            };
+            if (queueUsername) {
+                redisOptions.username = queueUsername;
+            }
+            if (queuePassword) {
+                redisOptions.password = queuePassword;
+            }
         }
         const client = (0, redis_2.createClient)({
             ...redisOptions,

@@ -27,7 +27,10 @@ export class MemoryRedisIsolated implements INodeType {
 		credentials: [
 			{
 				name: 'redisMemoryIsolated',
-				required: true,
+				required: false,
+				displayOptions: {
+					show: {},
+				},
 			},
 		],
 		codex: {
@@ -59,6 +62,12 @@ export class MemoryRedisIsolated implements INodeType {
 						'@version': [{ _cnd: { lte: 1 } }],
 					},
 				},
+			},
+			{
+				displayName: 'Credentials are optional. If not provided, the node will use queue Redis environment variables (QUEUE_BULL_REDIS_*) with database number + 1.',
+				name: 'credentialsNotice',
+				type: 'notice',
+				default: '',
 			},
 			{
 				displayName: 'Session ID',
@@ -96,7 +105,13 @@ export class MemoryRedisIsolated implements INodeType {
 	};
 
 	async supplyData(this: ISupplyDataFunctions, itemIndex: number): Promise<SupplyData> {
-		const credentials = await this.getCredentials('redisMemoryIsolated');
+		let credentials;
+		try {
+			credentials = await this.getCredentials('redisMemoryIsolated');
+		} catch (error) {
+			// Credentials not defined, will use environment variables
+			credentials = null;
+		}
 
 		const sessionId = this.getNodeParameter('sessionId', itemIndex) as string;
 		const sessionTTL = this.getNodeParameter('sessionTTL', itemIndex, 0) as number;
@@ -117,20 +132,48 @@ export class MemoryRedisIsolated implements INodeType {
 		// Create isolated session key: userHash:sessionId
 		const isolatedSessionKey = `${userHash}:${sessionId}`;
 
-		const redisOptions: RedisClientOptions = {
-			socket: {
-				host: credentials.host as string,
-				port: credentials.port as number,
-				tls: credentials.ssl === true,
-			},
-			database: credentials.database as number,
-		};
+		let redisOptions: RedisClientOptions;
 
-		if (credentials.user) {
-			redisOptions.username = credentials.user as string;
-		}
-		if (credentials.password) {
-			redisOptions.password = credentials.password as string;
+		if (credentials) {
+			// Use provided credentials
+			redisOptions = {
+				socket: {
+					host: credentials.host as string,
+					port: credentials.port as number,
+					tls: credentials.ssl === true,
+				},
+				database: credentials.database as number,
+			};
+
+			if (credentials.user) {
+				redisOptions.username = credentials.user as string;
+			}
+			if (credentials.password) {
+				redisOptions.password = credentials.password as string;
+			}
+		} else {
+			// Use queue Redis environment variables
+			const queueHost = process.env.QUEUE_BULL_REDIS_HOST || 'localhost';
+			const queuePort = parseInt(process.env.QUEUE_BULL_REDIS_PORT || '6379', 10);
+			const queueDb = parseInt(process.env.QUEUE_BULL_REDIS_DB || '0', 10);
+			const queueUsername = process.env.QUEUE_BULL_REDIS_USERNAME;
+			const queuePassword = process.env.QUEUE_BULL_REDIS_PASSWORD;
+
+			redisOptions = {
+				socket: {
+					host: queueHost,
+					port: queuePort,
+				},
+				// Use queue database + 1 to avoid conflicts
+				database: queueDb + 1,
+			};
+
+			if (queueUsername) {
+				redisOptions.username = queueUsername;
+			}
+			if (queuePassword) {
+				redisOptions.password = queuePassword;
+			}
 		}
 
 		const client = createClient({
