@@ -12,6 +12,7 @@ import { createClient, type RedisClientOptions } from 'redis';
 import * as crypto from 'crypto';
 
 export class MemoryRedisIsolated implements INodeType {
+	usableAsTool = false;
 	description: INodeTypeDescription = {
 		displayName: 'Redis Chat Memory (Isolated)',
 		name: 'memoryRedisIsolated',
@@ -87,6 +88,7 @@ export class MemoryRedisIsolated implements INodeType {
 					'How long the session should be stored in seconds. Set to 0 for no expiration.',
 			},
 		],
+		usableAsTool: true,
 	};
 
 	async supplyData(this: ISupplyDataFunctions, itemIndex: number): Promise<SupplyData> {

@@ -41,6 +41,7 @@ const redis_2 = require("redis");
 const crypto = __importStar(require("crypto"));
 class MemoryRedisIsolated {
     constructor() {
+        this.usableAsTool = false;
         this.description = {
             displayName: 'Redis Chat Memory (Isolated)',
             name: 'memoryRedisIsolated',
@@ -115,6 +116,7 @@ class MemoryRedisIsolated {
                     description: 'How long the session should be stored in seconds. Set to 0 for no expiration.',
                 },
             ],
+            usableAsTool: true,
         };
     }
     async supplyData(itemIndex) {

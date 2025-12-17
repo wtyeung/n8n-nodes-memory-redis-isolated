@@ -4,13 +4,8 @@
     "description": "Redis-based chat memory node for n8n AI agents with user isolation for queue mode",
     "license": "MIT",
     "homepage": "https://github.com/wtyeung/n8n-nodes-memory-redis-isolated#readme",
-    "keywords": [
-        "n8n-community-node-package"
-    ],
-    "author": {
-        "name": "Tim Yeung",
-        "email": "tim.yeung@hku.hk"
-    },
+    "keywords": ["n8n-community-node-package"],
+    "author": { "name": "Tim Yeung", "email": "tim.yeung@hku.hk" },
     "repository": {
         "type": "git",
         "url": "https://github.com/wtyeung/n8n-nodes-memory-redis-isolated.git"
@@ -24,17 +19,11 @@
         "release": "n8n-node release",
         "prepublishOnly": "n8n-node prerelease"
     },
-    "files": [
-        "dist"
-    ],
+    "files": ["dist"],
     "n8n": {
         "n8nNodesApiVersion": 1,
-        "credentials": [
-            "dist/credentials/RedisMemoryIsolated.credentials.js"
-        ],
-        "nodes": [
-            "dist/nodes/MemoryRedisIsolated/MemoryRedisIsolated.node.js"
-        ],
+        "credentials": ["dist/credentials/RedisMemoryIsolated.credentials.js"],
+        "nodes": ["dist/nodes/MemoryRedisIsolated/MemoryRedisIsolated.node.js"],
         "strict": false
     },
     "devDependencies": {
@@ -52,7 +41,5 @@
         "langchain": "^0.3.0",
         "redis": "^4.7.0"
     },
-    "peerDependencies": {
-        "n8n-workflow": "*"
-    }
+    "peerDependencies": { "n8n-workflow": "*" }
 }

@@ -5,7 +5,13 @@ class RedisMemoryIsolated {
     constructor() {
         this.name = 'redisMemoryIsolated';
         this.displayName = 'Redis Memory (Isolated)';
-        this.documentationUrl = 'redis';
+        this.documentationUrl = 'https://github.com/wtyeung/n8n-nodes-memory-redis-isolated#credentials';
+        this.icon = 'file:redis.svg';
+        this.test = {
+            request: {
+                baseURL: '={{$credentials.ssl ? "rediss" : "redis"}}://{{$credentials.host}}:{{$credentials.port}}',
+            },
+        };
         this.properties = [
             {
                 displayName: 'Password',
