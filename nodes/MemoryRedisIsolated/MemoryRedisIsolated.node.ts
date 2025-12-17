@@ -86,10 +86,10 @@ export class MemoryRedisIsolated implements INodeType {
 				default: 86400,
 				typeOptions: {
 					maxValue: 86400,
-					minValue: 0,
+					minValue: 1,
 				},
 				description:
-					'How long the session should be stored in seconds. Maximum is 86400 (24 hours). Set to 0 for no expiration.',
+					'How long the session should be stored in seconds. Default and maximum is 86400 (24 hours). Minimum is 1 second.',
 			},
 		],
 		usableAsTool: true,

@@ -67,7 +67,7 @@ The node stores and retrieves chat history for AI agents with the following para
 
 - **Session ID**: Session identifier for the conversation
 - **Context Window Length**: Number of previous messages to keep in memory (default: 10)
-- **Session Time To Live (Seconds)**: How long the session should be stored in seconds (default: 86400 = 24 hours, maximum: 86400). Set to 0 for no expiration.
+- **Session Time To Live (Seconds)**: How long the session should be stored in seconds (default: 86400 = 24 hours, maximum: 86400, minimum: 1). All sessions must have an expiration.
 
 ## Credentials
 
