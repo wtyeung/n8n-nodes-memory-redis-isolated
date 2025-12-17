@@ -169,12 +169,13 @@ Session ID: "conv456" (your input)
 Final Redis Key: "96cae35ce8:conv456"
 ```
 
-This ensures:
-- Different workflows with the same session ID get different Redis keys
-- Memory is isolated per workflow, preventing cross-workflow data leaks
-- Within a workflow, you control isolation via the session ID (e.g., per user, per conversation)
-- The workflow ID is consistent across all queue workers
-- The system is scalable and performant
+### Security Benefits:
+
+- **Cross-workflow isolation**: Different workflows with the same session ID get different Redis keys, preventing data leaks between workflows
+- **Protection against poor session keys**: Even if you use a session key with low randomness (e.g., "user1", "session1"), the workflow prefix ensures that different workflows cannot access each other's chat history. This prevents accidental or malicious access to other workflows' conversations.
+- **Consistent isolation**: The workflow ID is consistent across all queue workers, ensuring reliable isolation in distributed environments
+- **User-controlled granularity**: Within a workflow, you control isolation via the session ID (e.g., per user, per conversation)
+- **Scalable and performant**: Hash-based prefixing is fast and doesn't require additional lookups
 
 ## Resources
 
