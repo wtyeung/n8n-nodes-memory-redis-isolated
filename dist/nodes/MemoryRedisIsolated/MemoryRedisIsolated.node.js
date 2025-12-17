@@ -108,11 +108,11 @@ class MemoryRedisIsolated {
                     },
                 },
                 {
-                    displayName: 'Session Time To Live',
+                    displayName: 'Session Time To Live (Seconds)',
                     name: 'sessionTTL',
                     type: 'number',
                     default: 0,
-                    description: 'For how long the session should be stored in seconds. If set to 0 it will not expire.',
+                    description: 'How long the session should be stored in seconds. Set to 0 for no expiration.',
                 },
             ],
         };
