@@ -1,0 +1,135 @@
+# n8n-nodes-memory-redis-isolated
+
+This is an n8n community node that provides Redis-based chat memory for AI agents with **user isolation** for n8n queue mode deployments.
+
+[n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/sustainable-use-license/) workflow automation platform.
+
+- [Installation](#installation)
+- [Features](#features)
+- [Operations](#operations)
+- [Credentials](#credentials)
+- [Compatibility](#compatibility)
+- [Usage](#usage)
+- [How User Isolation Works](#how-user-isolation-works)
+- [Resources](#resources)
+
+## Installation
+
+Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+
+```bash
+npm install n8n-nodes-memory-redis-isolated
+```
+
+## Features
+
+- **User Isolation**: Chat histories are isolated per user using hashed user IDs
+- **Queue Mode Compatible**: Designed specifically for n8n queue mode where simple in-memory storage doesn't work reliably
+- **Dedicated Credentials**: Uses its own credential type, not shared with regular Redis operation nodes
+- **Session Management**: Supports session TTL and context window length
+- **Secure**: User IDs are hashed (SHA-256) and only the first 10 characters are used as prefix
+
+## Operations
+
+This node provides a single operation: **Redis Chat Memory (Isolated)**
+
+The node stores and retrieves chat history for AI agents with the following parameters:
+
+- **User ID**: Unique identifier for the user (will be hashed for security)
+- **Session ID**: Session identifier for the conversation
+- **Context Window Length**: Number of previous messages to keep in memory (default: 10)
+- **Session Time To Live**: How long the session should be stored in seconds (0 = no expiration)
+
+## Credentials
+
+This node uses a dedicated **Redis Memory (Isolated)** credential type that is NOT shared with the standard Redis operation node.
+
+### Setting up credentials:
+
+1. In n8n, go to **Credentials** → **New**
+2. Search for "Redis Memory (Isolated)"
+3. Configure the following:
+   - **Host**: Redis server hostname (default: localhost)
+   - **Port**: Redis server port (default: 6379)
+   - **Password**: Redis password (if required)
+   - **User**: Redis username (leave blank for password-only auth)
+   - **Database Number**: Redis database number (default: 0)
+   - **SSL**: Enable SSL/TLS connection
+   - **Disable TLS Verification**: Only for self-signed certificates (insecure)
+
+### Prerequisites:
+
+- A running Redis server (version 4.0+)
+- Redis credentials with read/write access
+
+## Compatibility
+
+- **Minimum n8n version**: 1.0.0
+- **Tested with**: n8n 1.x
+- **Node.js**: 18.x or higher
+- **Redis**: 4.0 or higher
+
+## Usage
+
+### Basic Setup
+
+1. Add an **AI Agent** node to your workflow
+2. Add the **Redis Chat Memory (Isolated)** node
+3. Connect it to your AI Agent's memory input
+4. Configure the credentials
+5. Set the User ID and Session ID parameters
+
+### Example Configuration
+
+```javascript
+// User ID - typically from incoming data
+{{ $json.userId }}
+
+// Session ID - can be conversation-specific
+{{ $json.conversationId }}
+```
+
+### Queue Mode
+
+This node is specifically designed for n8n queue mode deployments where:
+- Multiple worker processes handle requests
+- In-memory storage is unreliable across workers
+- Persistent storage is required for chat history
+
+## How User Isolation Works
+
+The node ensures that users cannot access each other's chat history through a two-step process:
+
+1. **Hashing**: The user ID is hashed using SHA-256
+2. **Prefix**: Only the first 10 characters of the hash are used as a prefix
+3. **Key Format**: Redis keys are stored as `{userHash}:{sessionId}`
+
+### Example:
+
+```
+User ID: "user123"
+SHA-256 Hash: "96cae35ce8a9b0244178bf28e4966c2ce1b8385723a96a6b838858cdd6ca0a1e"
+Prefix (first 10 chars): "96cae35ce8"
+Session ID: "conv456"
+Final Redis Key: "96cae35ce8:conv456"
+```
+
+This ensures:
+- Users cannot guess other users' keys
+- Even if a user knows another user's ID, they cannot access their chat history
+- The system is scalable and performant
+
+## Resources
+
+- [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
+- [Redis documentation](https://redis.io/documentation)
+- [LangChain Redis Memory](https://js.langchain.com/docs/integrations/memory/redis)
+
+## Version History
+
+### 0.1.0 (Initial Release)
+
+- Redis-based chat memory with user isolation
+- Dedicated credential type
+- Support for queue mode deployments
+- Configurable context window and session TTL
