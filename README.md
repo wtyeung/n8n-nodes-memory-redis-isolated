@@ -53,11 +53,11 @@ For n8n v2.0+ (Docker/Self-hosted):
 
 ## Features
 
-- **User Isolation**: Chat histories are isolated per user using hashed user IDs
+- **Workflow Isolation**: Chat histories are isolated per workflow using hashed workflow IDs
 - **Queue Mode Compatible**: Designed specifically for n8n queue mode where simple in-memory storage doesn't work reliably
 - **Dedicated Credentials**: Uses its own credential type, not shared with regular Redis operation nodes
 - **Session Management**: Supports session TTL and context window length
-- **Secure**: User IDs are hashed (SHA-256) and only the first 10 characters are used as prefix
+- **Secure**: Workflow IDs are hashed (SHA-256) and only the first 10 characters are used as prefix
 
 ## Operations
 
@@ -65,7 +65,6 @@ This node provides a single operation: **Redis Chat Memory (Isolated)**
 
 The node stores and retrieves chat history for AI agents with the following parameters:
 
-- **User ID**: Unique identifier for the user (will be hashed for security)
 - **Session ID**: Session identifier for the conversation
 - **Context Window Length**: Number of previous messages to keep in memory (default: 10)
 - **Session Time To Live**: How long the session should be stored in seconds (0 = no expiration)
@@ -117,15 +116,14 @@ When using **Azure Cache for Redis**, configure the credentials as follows:
 2. Add the **Redis Chat Memory (Isolated)** node
 3. Connect it to your AI Agent's memory input
 4. Configure the credentials
-5. Set the User ID and Session ID parameters
+5. Set the Session ID parameter
 
 ### Example Configuration
 
 ```javascript
-// User ID - typically from incoming data
-{{ $json.userId }}
-
-// Session ID - can be conversation-specific
+// Session ID - can be conversation-specific or user-specific
+{{ $json.sessionId }}
+// or
 {{ $json.conversationId }}
 ```
 
@@ -136,18 +134,18 @@ This node is specifically designed for n8n queue mode deployments where:
 - In-memory storage is unreliable across workers
 - Persistent storage is required for chat history
 
-## How User Isolation Works
+## How Workflow Isolation Works
 
-The node ensures that users cannot access each other's chat history through a two-step process:
+The node ensures that workflows cannot access each other's chat history through a two-step process:
 
-1. **Hashing**: The user ID is hashed using SHA-256
+1. **Hashing**: The workflow ID is hashed using SHA-256
 2. **Prefix**: Only the first 10 characters of the hash are used as a prefix
-3. **Key Format**: Redis keys are stored as `{userHash}:{sessionId}`
+3. **Key Format**: Redis keys are stored as `{workflowHash}:{sessionId}`
 
 ### Example:
 
 ```
-User ID: "user123"
+Workflow ID: "abc123xyz"
 SHA-256 Hash: "96cae35ce8a9b0244178bf28e4966c2ce1b8385723a96a6b838858cdd6ca0a1e"
 Prefix (first 10 chars): "96cae35ce8"
 Session ID: "conv456"
@@ -155,8 +153,9 @@ Final Redis Key: "96cae35ce8:conv456"
 ```
 
 This ensures:
-- Users cannot guess other users' keys
-- Even if a user knows another user's ID, they cannot access their chat history
+- Different workflows cannot access each other's memory
+- Memory is isolated per workflow, preventing cross-workflow data leaks
+- The workflow ID is consistent across all queue workers
 - The system is scalable and performant
 
 ## Resources

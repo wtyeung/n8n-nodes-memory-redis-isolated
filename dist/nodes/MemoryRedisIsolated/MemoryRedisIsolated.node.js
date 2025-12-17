@@ -78,6 +78,17 @@ class MemoryRedisIsolated {
             outputNames: ['Memory'],
             properties: [
                 {
+                    displayName: '',
+                    name: 'notice',
+                    type: 'notice',
+                    default: '',
+                    displayOptions: {
+                        show: {
+                            '@version': [{ _cnd: { lte: 1 } }],
+                        },
+                    },
+                },
+                {
                     displayName: 'Session ID',
                     name: 'sessionId',
                     type: 'string',
