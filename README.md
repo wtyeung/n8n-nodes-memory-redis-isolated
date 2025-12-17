@@ -47,6 +47,7 @@ For n8n v2.0+ (Docker/Self-hosted):
 ## Troubleshooting
 
 - **Node not showing up?** Ensure you are looking in the **Memory** input of the AI Agent node, not just the main node list.
+- **Can't find the node?** In the main node list, search for **"isolated"** to find this node. Searching for "redis" may not show it due to n8n's search indexing prioritizing built-in nodes.
 - **Connection failed?** Verify your Redis credentials and network connectivity.
 - **Port conflicts?** If `npm run dev` fails, check if another n8n instance is running on port 5678.
 
