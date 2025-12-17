@@ -138,11 +138,13 @@ When using **Azure Cache for Redis**, configure the credentials as follows:
 
 ## How Workflow Isolation Works
 
-The node ensures that workflows cannot access each other's chat history through a two-step process:
+The node adds a workflow-specific prefix to the session key to ensure isolation:
 
 1. **Hashing**: The workflow ID is hashed using SHA-256
 2. **Prefix**: Only the first 10 characters of the hash are used as a prefix
 3. **Key Format**: Redis keys are stored as `{workflowHash}:{sessionId}`
+
+The workflow ID prefix is added to your session key, creating a unique Redis key per workflow.
 
 ### Example:
 
@@ -150,13 +152,14 @@ The node ensures that workflows cannot access each other's chat history through 
 Workflow ID: "abc123xyz"
 SHA-256 Hash: "96cae35ce8a9b0244178bf28e4966c2ce1b8385723a96a6b838858cdd6ca0a1e"
 Prefix (first 10 chars): "96cae35ce8"
-Session ID: "conv456"
+Session ID: "conv456" (your input)
 Final Redis Key: "96cae35ce8:conv456"
 ```
 
 This ensures:
-- Different workflows cannot access each other's memory
+- Different workflows with the same session ID get different Redis keys
 - Memory is isolated per workflow, preventing cross-workflow data leaks
+- Within a workflow, you control isolation via the session ID (e.g., per user, per conversation)
 - The workflow ID is consistent across all queue workers
 - The system is scalable and performant
 
