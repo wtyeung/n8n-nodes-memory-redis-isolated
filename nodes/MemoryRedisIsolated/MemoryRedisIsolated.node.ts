@@ -50,17 +50,6 @@ export class MemoryRedisIsolated implements INodeType {
 		outputNames: ['Memory'],
 		properties: [
 			{
-				displayName: '',
-				name: 'notice',
-				type: 'notice',
-				default: '',
-				displayOptions: {
-					show: {
-						'@version': [{ _cnd: { lte: 1 } }],
-					},
-				},
-			},
-			{
 				displayName: 'Use Queue Mode Redis',
 				name: 'useQueueRedis',
 				type: 'boolean',
