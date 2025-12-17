@@ -55,7 +55,7 @@ For n8n v2.0+ (Docker/Self-hosted):
 
 - **Queue Mode Essential**: Solves the critical issue where simple memory nodes fail in queue mode with multiple workers. Redis provides shared persistent storage accessible by all workers.
 - **Workflow Isolation**: Chat histories are isolated per workflow using hashed workflow IDs
-- **Dedicated Credentials**: Uses its own credential type, not shared with regular Redis operation nodes. This prevents users from using the same credential to list keys or access other workflows' memory data via Redis operation nodes.
+- **Enhanced Security with Dedicated Credentials**: Unlike the built-in Redis Chat Memory node, this node uses its own credential type that is NOT compatible with Redis operation nodes. This prevents users from using the same credential with a Redis node to run `KEYS *` or `GET` commands to list and read other workflows' chat history. The built-in Redis Chat Memory shares credentials with Redis operation nodes, creating a potential security risk.
 - **Session Management**: Supports session TTL and context window length
 - **Secure**: Workflow IDs are hashed (SHA-256) and only the first 10 characters are used as prefix
 
