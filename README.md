@@ -1,6 +1,6 @@
 # n8n-nodes-memory-redis-isolated
 
-This is an n8n community node that provides Redis-based chat memory for AI agents with **user isolation** for n8n queue mode deployments.
+This is an n8n community node that provides Redis-based chat memory for AI agents in **n8n queue mode with multiple workers**. Simple in-memory chat history does not work reliably in queue mode because different workers cannot share memory. This node uses Redis as persistent storage to ensure chat history is accessible across all workers.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/sustainable-use-license/) workflow automation platform.
 
@@ -53,8 +53,8 @@ For n8n v2.0+ (Docker/Self-hosted):
 
 ## Features
 
+- **Queue Mode Essential**: Solves the critical issue where simple memory nodes fail in queue mode with multiple workers. Redis provides shared persistent storage accessible by all workers.
 - **Workflow Isolation**: Chat histories are isolated per workflow using hashed workflow IDs
-- **Queue Mode Compatible**: Designed specifically for n8n queue mode where simple in-memory storage doesn't work reliably
 - **Dedicated Credentials**: Uses its own credential type, not shared with regular Redis operation nodes. This prevents users from using the same credential to list keys or access other workflows' memory data via Redis operation nodes.
 - **Session Management**: Supports session TTL and context window length
 - **Secure**: Workflow IDs are hashed (SHA-256) and only the first 10 characters are used as prefix
@@ -129,10 +129,12 @@ When using **Azure Cache for Redis**, configure the credentials as follows:
 
 ### Queue Mode
 
-This node is specifically designed for n8n queue mode deployments where:
-- Multiple worker processes handle requests
-- In-memory storage is unreliable across workers
-- Persistent storage is required for chat history
+**This is the primary use case for this node.** In n8n queue mode deployments:
+- Multiple worker processes handle requests in parallel
+- Simple in-memory chat history nodes (like "Simple Memory") **do not work** because each worker has its own isolated memory
+- Workers cannot share in-memory data, causing chat history to be lost or inconsistent
+- Redis provides a shared persistent storage layer that all workers can access
+- This ensures chat history is maintained correctly regardless of which worker processes the request
 
 ## How Workflow Isolation Works
 
