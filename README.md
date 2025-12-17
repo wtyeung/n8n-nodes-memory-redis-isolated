@@ -86,6 +86,16 @@ This node uses a dedicated **Redis Memory (Isolated)** credential type that is N
    - **SSL**: Enable SSL/TLS connection
    - **Disable TLS Verification**: Only for self-signed certificates (insecure)
 
+### Azure Cache for Redis:
+
+When using **Azure Cache for Redis**, configure the credentials as follows:
+- **Host**: Your Azure Redis hostname (e.g., `yourname.redis.cache.windows.net`)
+- **Port**: `6380` (Azure uses SSL by default)
+- **Password**: Use your Azure Redis **Access Key** (Primary or Secondary)
+- **User**: Leave blank (Azure Redis uses password-only authentication)
+- **SSL**: Enable this option (required for Azure)
+- **Database Number**: 0 (or your preferred database)
+
 ### Prerequisites:
 
 - A running Redis server (version 4.0+)
