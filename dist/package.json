@@ -1,6 +1,6 @@
 {
     "name": "n8n-nodes-memory-redis-isolated",
-    "version": "0.1.1",
+    "version": "0.2.0",
     "description": "Redis-based chat memory node for n8n AI agents with user isolation for queue mode",
     "license": "MIT",
     "homepage": "https://github.com/wtyeung/n8n-nodes-memory-redis-isolated#readme",
