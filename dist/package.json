@@ -1,6 +1,6 @@
 {
     "name": "n8n-nodes-memory-redis-isolated",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "description": "Redis-based chat memory node for n8n AI agents with user isolation for queue mode",
     "license": "MIT",
     "homepage": "https://github.com/wtyeung/n8n-nodes-memory-redis-isolated#readme",
@@ -38,21 +38,40 @@
         "strict": false
     },
     "devDependencies": {
+        "@langchain/classic": "*",
+        "@langchain/core": "*",
+        "@langchain/redis": "*",
         "@n8n/node-cli": "*",
         "@types/node": "^25.0.3",
         "eslint": "9.32.0",
+        "langchain": "*",
         "n8n-workflow": "^2.1.0",
         "prettier": "3.6.2",
         "release-it": "^19.0.4",
         "typescript": "5.9.2"
     },
     "dependencies": {
-        "@langchain/classic": "^1.0.6",
-        "@langchain/redis": "^0.1.0",
-        "langchain": "^0.3.0",
         "redis": "^4.7.0"
     },
     "peerDependencies": {
+        "@langchain/classic": "*",
+        "@langchain/core": "*",
+        "@langchain/redis": "*",
+        "langchain": "*",
         "n8n-workflow": "*"
+    },
+    "peerDependenciesMeta": {
+        "@langchain/classic": {
+            "optional": false
+        },
+        "@langchain/core": {
+            "optional": false
+        },
+        "@langchain/redis": {
+            "optional": false
+        },
+        "langchain": {
+            "optional": false
+        }
     }
 }
