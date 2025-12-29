@@ -8,8 +8,63 @@ import {
 } from 'n8n-workflow';
 import { RedisChatMessageHistory, type RedisChatMessageHistoryInput } from '@langchain/redis';
 import { BufferWindowMemory } from '@langchain/classic/memory';
+import type { InputValues, MemoryVariables, OutputValues } from '@langchain/core/memory';
+import type { BaseMessage } from '@langchain/core/messages';
 import { createClient, type RedisClientOptions } from 'redis';
 import * as crypto from 'crypto';
+
+function logWrapper(
+	memory: BufferWindowMemory,
+	executeFunctions: ISupplyDataFunctions,
+): BufferWindowMemory {
+	return new Proxy(memory, {
+		get: (target, prop) => {
+			if (prop === 'loadMemoryVariables') {
+				return async (values: InputValues): Promise<MemoryVariables> => {
+					const { index } = executeFunctions.addInputData(NodeConnectionTypes.AiMemory, [
+						[{ json: { action: 'loadMemoryVariables', values } }],
+					]);
+
+					try {
+						const response = await target.loadMemoryVariables(values);
+						const chatHistory = (response?.chat_history as BaseMessage[]) ?? response;
+
+						executeFunctions.addOutputData(NodeConnectionTypes.AiMemory, index, [
+							[{ json: { action: 'loadMemoryVariables', chatHistory } }],
+						]);
+						return response;
+					} catch (error) {
+						throw new NodeOperationError(
+							executeFunctions.getNode(),
+							`Error loading memory: ${error instanceof Error ? error.message : 'Unknown error'}`,
+						);
+					}
+				};
+			} else if (prop === 'saveContext') {
+				return async (input: InputValues, output: OutputValues): Promise<void> => {
+					const { index } = executeFunctions.addInputData(NodeConnectionTypes.AiMemory, [
+						[{ json: { action: 'saveContext', input, output } }],
+					]);
+
+					try {
+						await target.saveContext(input, output);
+						const chatHistory = await target.chatHistory.getMessages();
+
+						executeFunctions.addOutputData(NodeConnectionTypes.AiMemory, index, [
+							[{ json: { action: 'saveContext', chatHistory } }],
+						]);
+					} catch (error) {
+						throw new NodeOperationError(
+							executeFunctions.getNode(),
+							`Error saving context: ${error instanceof Error ? error.message : 'Unknown error'}`,
+						);
+					}
+				};
+			}
+			return target[prop as keyof BufferWindowMemory];
+		},
+	});
+}
 
 export class MemoryRedisIsolated implements INodeType {
 	usableAsTool = false;
@@ -200,7 +255,7 @@ k: contextWindowLength,
 
 		return {
 			closeFunction,
-			response: memory,
+			response: logWrapper(memory, this),
 		};
 	}
 }
