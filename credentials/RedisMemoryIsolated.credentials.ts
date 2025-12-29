@@ -5,11 +5,6 @@ export class RedisMemoryIsolated implements ICredentialType {
 	displayName = 'Redis Memory (Isolated)';
 	documentationUrl = 'https://github.com/wtyeung/n8n-nodes-memory-redis-isolated#credentials';
 	icon = 'file:redis.svg' as const;
-	test = {
-		request: {
-			baseURL: '={{$credentials.ssl ? "rediss" : "redis"}}://{{$credentials.host}}:{{$credentials.port}}',
-		},
-	};
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Password',
